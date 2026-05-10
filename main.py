@@ -103,14 +103,28 @@ async def chat(request: ChatRequest):
             found_emails = re.findall(email_pattern, msg['content'])
             emails_in_history.extend(found_emails)
 
-    if emails_in_history and request.session_id not in conversation_history.get('notified', []):
+    bot_asked_for_contact = any(
+        any(phrase in m['content'].lower() for phrase in ['your name', 'your email', 'name and email', 'contact'])
+        for m in history if m['role'] == 'assistant'
+    )
+
+    if emails_in_history and bot_asked_for_contact and request.session_id not in conversation_history.get('notified',
+                                                                                                          []):
         # Extract name from history
         last_user_messages = [m['content'] for m in history if m['role'] == 'user']
         context = '\n'.join(last_user_messages[-3:])
 
-        # Send email notification
+        # Try to extract name from history
+        user_messages = [m['content'] for m in history if m['role'] == 'user']
+        potential_name = "Website Visitor"
+        for msg in user_messages:
+            words = msg.strip().split()
+            if 1 <= len(words) <= 3 and not re.search(email_pattern, msg):
+                potential_name = msg.strip()
+                break
+
         send_lead_email(
-            name="Website Visitor",
+            name=potential_name,
             email=emails_in_history[-1],
             context=context
         )
