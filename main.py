@@ -7,6 +7,39 @@ from dotenv import load_dotenv
 from listings import get_listings_context
 import os
 
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+def send_lead_email(name: str, email: str, context: str):
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = os.getenv("EMAIL_FROM")
+        msg['To'] = os.getenv("EMAIL_TO")
+        msg['Subject'] = f"New Lead: {name}"
+
+        body = f"""
+New lead from your website chatbot!
+
+Name: {name}
+Email: {email}
+
+Last message context:
+{context}
+
+---
+Sent automatically by your AI chatbot
+        """
+        msg.attach(MIMEText(body, 'plain'))
+
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(os.getenv("EMAIL_FROM"), os.getenv("EMAIL_PASSWORD"))
+        server.send_message(msg)
+        server.quit()
+    except Exception as e:
+        print(f"Email error: {e}")
+
 load_dotenv()
 
 app = FastAPI()
@@ -59,5 +92,32 @@ async def chat(request: ChatRequest):
     # Keep history manageable
     if len(history) > 20:
         conversation_history[request.session_id] = history[-20:]
+
+    # Check if lead was captured
+    import re
+    email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    emails_in_history = []
+
+    for msg in history:
+        if msg['role'] == 'user':
+            found_emails = re.findall(email_pattern, msg['content'])
+            emails_in_history.extend(found_emails)
+
+    if emails_in_history and request.session_id not in conversation_history.get('notified', []):
+        # Extract name from history
+        last_user_messages = [m['content'] for m in history if m['role'] == 'user']
+        context = '\n'.join(last_user_messages[-3:])
+
+        # Send email notification
+        send_lead_email(
+            name="Website Visitor",
+            email=emails_in_history[-1],
+            context=context
+        )
+
+        # Mark as notified
+        if 'notified' not in conversation_history:
+            conversation_history['notified'] = []
+        conversation_history['notified'].append(request.session_id)
 
     return {"reply": reply}
