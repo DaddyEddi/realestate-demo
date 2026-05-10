@@ -6,7 +6,8 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from listings import get_listings_context
 import os
-
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -124,10 +125,13 @@ async def chat(request: ChatRequest):
                 potential_name = msg.strip()
                 break
 
-        send_lead_email(
-            name=potential_name,
-            email=emails_in_history[-1],
-            context=context
+        executor = ThreadPoolExecutor(max_workers=1)
+        asyncio.get_event_loop().run_in_executor(
+            executor,
+            send_lead_email,
+            potential_name,
+            emails_in_history[-1],
+            context
         )
 
         # Mark as notified
