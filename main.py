@@ -6,6 +6,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from listings import get_listings_context
 import os
+import re
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -36,6 +37,7 @@ Sent automatically by your AI chatbot
         server.login(os.getenv("EMAIL_FROM"), os.getenv("EMAIL_PASSWORD"))
         server.send_message(msg)
         server.quit()
+        print(f"Email sent successfully to {email}")
     except Exception as e:
         print(f"Email error: {e}")
 
@@ -94,7 +96,6 @@ async def chat(request: ChatRequest, background_tasks: BackgroundTasks):
         conversation_history[request.session_id] = history[-20:]
 
     # Check if lead was captured
-    import re
     email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
     emails_in_history = []
 
@@ -108,20 +109,24 @@ async def chat(request: ChatRequest, background_tasks: BackgroundTasks):
         for m in history if m['role'] == 'assistant'
     )
 
-    if emails_in_history and bot_asked_for_contact and request.session_id not in conversation_history.get('notified',
-                                                                                                          []):
-        # Extract name from history
+    print(f"DEBUG emails: {emails_in_history}, bot_asked: {bot_asked_for_contact}")
+
+    notified = conversation_history.get('notified', [])
+
+    if emails_in_history and bot_asked_for_contact and request.session_id not in notified:
+        # Extract context
         last_user_messages = [m['content'] for m in history if m['role'] == 'user']
         context = '\n'.join(last_user_messages[-3:])
 
         # Try to extract name from history
-        user_messages = [m['content'] for m in history if m['role'] == 'user']
         potential_name = "Website Visitor"
-        for msg in user_messages:
+        for msg in last_user_messages:
             words = msg.strip().split()
             if 1 <= len(words) <= 3 and not re.search(email_pattern, msg):
                 potential_name = msg.strip()
                 break
+
+        print(f"DEBUG sending email: name={potential_name}, email={emails_in_history[-1]}")
 
         background_tasks.add_task(
             send_lead_email,
