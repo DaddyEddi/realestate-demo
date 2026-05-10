@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Austin Realty Group</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; color: #333; }
+
+        /* HEADER */
+        header {
+            background: #1a1a2e;
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 { font-size: 24px; font-weight: 700; }
+        header p { font-size: 13px; color: #aaa; margin-top: 4px; }
+        nav a { color: #ccc; text-decoration: none; margin-left: 24px; font-size: 14px; }
+        nav a:hover { color: white; }
+
+        /* HERO */
+        .hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
+            text-align: center;
+            padding: 80px 20px;
+        }
+        .hero h2 { font-size: 42px; font-weight: 700; margin-bottom: 16px; }
+        .hero p { font-size: 18px; color: #ccc; margin-bottom: 32px; }
+        .hero button {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .hero button:hover { background: #c73652; }
+
+        /* LISTINGS */
+        .listings-section { padding: 60px 40px; }
+        .listings-section h2 { font-size: 28px; margin-bottom: 32px; text-align: center; }
+        .listings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-4px); }
+        .card-img {
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+        }
+        .card-body { padding: 20px; }
+        .card-price { font-size: 22px; font-weight: 700; color: #e94560; margin-bottom: 6px; }
+        .card-address { font-size: 14px; color: #666; margin-bottom: 10px; }
+        .card-details { font-size: 13px; color: #888; margin-bottom: 12px; }
+        .card-desc { font-size: 13px; color: #555; line-height: 1.5; }
+        .card-btn {
+            margin-top: 16px;
+            width: 100%;
+            background: #1a1a2e;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .card-btn:hover { background: #0f3460; }
+
+        /* CHAT WIDGET */
+        #chat-toggle {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            width: 60px;
+            height: 60px;
+            background: #e94560;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 26px;
+            color: white;
+            box-shadow: 0 4px 20px rgba(233,69,96,0.5);
+            z-index: 1000;
+            transition: transform 0.2s;
+        }
+        #chat-toggle:hover { transform: scale(1.1); }
+
+        #chat-window {
+            position: fixed;
+            bottom: 100px;
+            right: 28px;
+            width: 360px;
+            height: 520px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+            overflow: hidden;
+        }
+        #chat-window.open { display: flex; }
+
+        .chat-header {
+            background: #1a1a2e;
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .chat-avatar {
+            width: 36px;
+            height: 36px;
+            background: #e94560;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .chat-header-info h4 { font-size: 15px; }
+        .chat-header-info p { font-size: 12px; color: #aaa; }
+        .online-dot {
+            width: 8px; height: 8px;
+            background: #4caf50;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+        }
+
+        #chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .msg { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.5; }
+        .msg.bot { background: #f0f0f0; color: #333; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .msg.user { background: #e94560; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .msg.typing { background: #f0f0f0; align-self: flex-start; }
+
+        .chat-input-area {
+            padding: 12px 16px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 8px;
+        }
+        #chat-input {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 24px;
+            padding: 10px 16px;
+            font-size: 14px;
+            outline: none;
+        }
+        #chat-input:focus { border-color: #e94560; }
+        #send-btn {
+            background: #e94560;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        #send-btn:hover { background: #c73652; }
+
+        footer {
+            background: #1a1a2e;
+            color: #aaa;
+            text-align: center;
+            padding: 30px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>🏠 Austin Realty Group</h1>
+        <p>Your trusted partner in Austin real estate</p>
+    </div>
+    <nav>
+        <a href="#">Listings</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+    </nav>
+</header>
+
+<div class="hero">
+    <h2>Find Your Dream Home in Austin</h2>
+    <p>Browse our curated listings and get instant answers from our AI assistant</p>
+    <button onclick="openChat()">💬 Chat with Our AI Agent</button>
+</div>
+
+<section class="listings-section">
+    <h2>Featured Listings</h2>
+    <div class="listings-grid" id="listings-grid"></div>
+</section>
+
+<footer>
+    <p>© 2026 Austin Realty Group · Austin, TX · (512) 555-0100</p>
+</footer>
+
+<!-- CHAT WIDGET -->
+<button id="chat-toggle" onclick="toggleChat()">💬</button>
+
+<div id="chat-window">
+    <div class="chat-header">
+        <div class="chat-avatar">🤖</div>
+        <div class="chat-header-info">
+            <h4>Austin Realty Assistant</h4>
+            <p><span class="online-dot"></span>Online · AI Powered</p>
+        </div>
+    </div>
+    <div id="chat-messages"></div>
+    <div class="chat-input-area">
+        <input type="text" id="chat-input" placeholder="Ask about properties..." />
+        <button id="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+</div>
+
+<script>
+    const listings = [
+        { id:1, address:"123 Oak Street, Austin, TX", price:450000, bed:3, bath:2, sqft:1850, emoji:"🏡", desc:"Charming single-family home in quiet neighborhood. Updated kitchen, hardwood floors, large backyard." },
+        { id:2, address:"456 Maple Ave, Austin, TX", price:625000, bed:4, bath:3, sqft:2400, emoji:"🏘️", desc:"Modern home with open floor plan. Chef's kitchen, master suite with walk-in closet, 2-car garage." },
+        { id:3, address:"789 Pine Road, Austin, TX", price:320000, bed:2, bath:1, sqft:1200, emoji:"🏠", desc:"Cozy starter home. Recently renovated bathroom, new roof 2023, energy-efficient windows." },
+        { id:4, address:"321 Elm Boulevard, Austin, TX", price:890000, bed:5, bath:4, sqft:3600, emoji:"🏰", desc:"Luxury property with pool, home office, gourmet kitchen, smart home system." },
+        { id:5, address:"654 Cedar Lane, Austin, TX", price:510000, bed:3, bath:2, sqft:2100, emoji:"🏡", desc:"Stunning renovated home. New kitchen with quartz countertops, spa-like master bath." }
+    ];
+
+    const grid = document.getElementById("listings-grid");
+    listings.forEach(l => {
+        grid.innerHTML += `
+        <div class="card">
+            <div class="card-img" style="background:hsl(${l.id*60},30%,90%)">${l.emoji}</div>
+            <div class="card-body">
+                <div class="card-price">$${l.price.toLocaleString()}</div>
+                <div class="card-address">📍 ${l.address}</div>
+                <div class="card-details">🛏 ${l.bed} bed · 🚿 ${l.bath} bath · 📐 ${l.sqft.toLocaleString()} sqft</div>
+                <div class="card-desc">${l.desc}</div>
+                <button class="card-btn" onclick="askAbout('${l.address}')">Ask AI About This Property</button>
+            </div>
+        </div>`;
+    });
+
+    const sessionId = Math.random().toString(36).substr(2, 9);
+    let chatOpen = false;
+    let greeted = false;
+
+    function toggleChat() {
+        chatOpen = !chatOpen;
+        const win = document.getElementById("chat-window");
+        win.classList.toggle("open", chatOpen);
+        if (chatOpen && !greeted) {
+            greeted = true;
+            setTimeout(() => addMessage("bot", "Hi! 👋 I'm your Austin Realty AI assistant. I can help you find the perfect home, answer questions about our listings, or schedule a viewing. What are you looking for?"), 400);
+        }
+    }
+
+    function openChat() {
+        if (!chatOpen) toggleChat();
+    }
+
+    function askAbout(address) {
+        openChat();
+        document.getElementById("chat-input").value = `Tell me more about ${address}`;
+        setTimeout(sendMessage, 300);
+    }
+
+    function addMessage(role, text) {
+        const msgs = document.getElementById("chat-messages");
+        const div = document.createElement("div");
+        div.className = `msg ${role}`;
+        div.textContent = text;
+        msgs.appendChild(div);
+        msgs.scrollTop = msgs.scrollHeight;
+        return div;
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById("chat-input");
+        const text = input.value.trim();
+        if (!text) return;
+        input.value = "";
+        addMessage("user", text);
+
+        const typing = addMessage("bot", "typing...");
+        typing.classList.add("typing");
+
+        try {
+            const res = await fetch("/chat", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ message: text, session_id: sessionId })
+            });
+            const data = await res.json();
+            typing.remove();
+            addMessage("bot", data.reply);
+        } catch(e) {
+            typing.remove();
+            addMessage("bot", "Sorry, something went wrong. Please try again.");
+        }
+    }
+
+    document.getElementById("chat-input").addEventListener("keypress", e => {
+        if (e.key === "Enter") sendMessage();
+    });
+</script>
+
+</body>
+</html>
