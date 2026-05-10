@@ -7,37 +7,30 @@ from dotenv import load_dotenv
 from listings import get_listings_context
 import os
 import re
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import resend
+
 
 def send_lead_email(name: str, email: str, context: str):
     try:
-        msg = MIMEMultipart()
-        msg['From'] = os.getenv("EMAIL_FROM")
-        msg['To'] = os.getenv("EMAIL_TO")
-        msg['Subject'] = f"New Lead: {name}"
+        resend.api_key = os.getenv("RESEND_API_KEY")
 
-        body = f"""
-New lead from your website chatbot!
+        params = {
+            "from": "Real Estate Bot <onboarding@resend.dev>",
+            "to": os.getenv("EMAIL_TO"),
+            "subject": f"New Lead: {name}",
+            "html": f"""
+                <h2>New lead from your website chatbot!</h2>
+                <p><strong>Name:</strong> {name}</p>
+                <p><strong>Email:</strong> {email}</p>
+                <h3>Conversation context:</h3>
+                <p>{context.replace(chr(10), '<br>')}</p>
+                <hr>
+                <p><em>Sent automatically by your AI chatbot</em></p>
+            """
+        }
 
-Name: {name}
-Email: {email}
-
-Last message context:
-{context}
-
----
-Sent automatically by your AI chatbot
-        """
-        msg.attach(MIMEText(body, 'plain'))
-
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(os.getenv("EMAIL_FROM"), os.getenv("EMAIL_PASSWORD"))
-        server.send_message(msg)
-        server.quit()
-        print(f"Email sent successfully to {email}")
+        resend.Emails.send(params)
+        print(f"Email sent successfully to {os.getenv('EMAIL_TO')}")
     except Exception as e:
         print(f"Email error: {e}")
 
