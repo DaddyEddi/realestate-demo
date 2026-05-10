@@ -47,13 +47,14 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-SYSTEM_PROMPT = f"""You are a helpful real estate assistant for a agency in Austin, TX.
+SYSTEM_PROMPT = f"""You are a helpful real estate assistant for an agency in Austin, TX.
 You help potential buyers find their perfect home.
 
 {get_listings_context()}
 
 Your job:
-- Answer questions about available properties
+- Answer questions about available properties accurately
+- When buyer asks for properties "under $X" — show ALL properties with price LESS THAN $X
 - Help narrow down options based on budget, bedrooms, location preferences
 - Be friendly and professional
 - If someone is interested in a property or wants to schedule a viewing, ask for their name and email
