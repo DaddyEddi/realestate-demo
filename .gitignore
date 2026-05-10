@@ -1,5 +1,6 @@
 .env
 OPENAI_API_KEY.txt
+Letter to Agency.txt
 .idea/
 __pycache__/
 *.pyc
