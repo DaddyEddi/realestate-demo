@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -6,8 +6,6 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from listings import get_listings_context
 import os
-import asyncio
-from concurrent.futures import ThreadPoolExecutor
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -74,7 +72,7 @@ async def root():
     return FileResponse("static/index.html")
 
 @app.post("/chat")
-async def chat(request: ChatRequest):
+async def chat(request: ChatRequest, background_tasks: BackgroundTasks):
     if request.session_id not in conversation_history:
         conversation_history[request.session_id] = []
 
@@ -125,9 +123,7 @@ async def chat(request: ChatRequest):
                 potential_name = msg.strip()
                 break
 
-        executor = ThreadPoolExecutor(max_workers=1)
-        asyncio.get_event_loop().run_in_executor(
-            executor,
+        background_tasks.add_task(
             send_lead_email,
             potential_name,
             emails_in_history[-1],
