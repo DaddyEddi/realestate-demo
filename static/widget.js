@@ -1,5 +1,5 @@
 (function() {
-    const BACKEND_URL = "https://realestate-demo-7ein.onrender.com/";
+    const BACKEND_URL = "https://realestate-demo-production.up.railway.app";
 
     const style = document.createElement("style");
     style.textContent = `
