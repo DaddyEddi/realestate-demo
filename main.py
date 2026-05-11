@@ -103,7 +103,11 @@ async def chat(request: ChatRequest, background_tasks: BackgroundTasks):
             emails_in_history.extend(found_emails)
 
     bot_asked_for_contact = any(
-        any(phrase in m['content'].lower() for phrase in ['your name', 'your email', 'name and email', 'contact'])
+        any(phrase in m['content'].lower() for phrase in [
+            'your name', 'your email', 'name and email', 'contact',
+            'email address', 'provide your email', 'share your email',
+            'write your email', 'leave your email'
+        ])
         for m in history if m['role'] == 'assistant'
     )
 
