@@ -53,24 +53,11 @@ const listings = [
         if (!chatOpen) toggleChat();
     }
 
-    let selectedDept = '';
-
     function selectDept(dept) {
-        selectedDept = dept;
         document.getElementById("welcome-screen").style.display = "none";
         document.getElementById("chat-area").style.display = "flex";
         if (savedMessages.length === 0) {
-            // Send dept as first system message
-            fetch("/chat", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    message: `[CONTEXT: Customer selected "${dept}"]`,
-                    session_id: sessionId
-                })
-            }).then(res => res.json()).then(data => {
-                addMessage("bot", data.reply);
-            });
+            setTimeout(() => addMessage("bot", "Hi! 👋 I'm your Austin Realty assistant. How can I help you today?"), 300);
         }
         document.getElementById("chat-input").focus();
     }
