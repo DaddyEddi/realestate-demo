@@ -418,11 +418,24 @@
         if (!chatOpen) toggleChat();
     }
 
+    let selectedDept = '';
+
     function selectDept(dept) {
+        selectedDept = dept;
         document.getElementById("welcome-screen").style.display = "none";
         document.getElementById("chat-area").style.display = "flex";
         if (savedMessages.length === 0) {
-            setTimeout(() => addMessage("bot", `Hi! 👋 I can help you with: **${dept}**. What would you like to know?`), 300);
+            // Send dept as first system message
+            fetch("/chat", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    message: `[CONTEXT: Customer selected "${dept}"]`,
+                    session_id: sessionId
+                })
+            }).then(res => res.json()).then(data => {
+                addMessage("bot", data.reply);
+            });
         }
         document.getElementById("chat-input").focus();
     }
