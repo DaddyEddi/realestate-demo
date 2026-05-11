@@ -118,9 +118,11 @@ async def chat(request: ChatRequest, background_tasks: BackgroundTasks):
 
         # Try to extract name from history
         potential_name = "Website Visitor"
+        skip_words = {'hi', 'hello', 'hey', 'yes', 'no', 'ok', 'okay', 'sure', 'thanks', 'нужен', 'нужна', 'хочу',
+                      'есть'}
         for msg in last_user_messages:
             words = msg.strip().split()
-            if 1 <= len(words) <= 3 and not re.search(email_pattern, msg):
+            if 1 <= len(words) <= 3 and not re.search(email_pattern, msg) and msg.strip().lower() not in skip_words:
                 potential_name = msg.strip()
                 break
 
