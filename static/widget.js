@@ -85,14 +85,19 @@
         </div>
     `;
 
-    const sessionId = Math.random().toString(36).substr(2, 9);
-    let greeted = false;
+    let sessionId = localStorage.getItem('arq_session_id');
+    if (!sessionId) {
+        sessionId = Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('arq_session_id', sessionId);
+    }
+    let greeted = localStorage.getItem('arq_greeted') === 'true';
 
     function toggleChat() {
         const win = document.getElementById("arq-window");
         win.classList.toggle("arq-open");
         if (win.classList.contains("arq-open") && !greeted) {
             greeted = true;
+            localStorage.setItem('arq_greeted', 'true');
             setTimeout(() => addMessage("bot", "Hi! 👋 I'm your Realty AI assistant. I can help you find the perfect home, answer questions about listings, or schedule a viewing. What are you looking for?"), 400);
         }
     }
